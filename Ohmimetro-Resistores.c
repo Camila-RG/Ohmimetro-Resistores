@@ -98,7 +98,5 @@
     ssd1306_draw_string(&ssd, str_y, 59, 52);            // Mostra valor Resistência
     ssd1306_send_data(&ssd);                             // Atualiza o display
     sleep_ms(700);
-
-     
    }
  }
