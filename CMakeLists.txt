@@ -13,6 +13,7 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME}  
         Ohmimetro-Resistores.c  # Código principal 
         lib/ssd1306.c # Biblioteca para o display OLED
+        lib/matriz_leds.c
         )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE 

@@ -15,6 +15,20 @@ void imprimir_binario(int num) {
  }
 }
 
+/*ws2812b_color_t colors[] = {
+    {0, 0, 0},      // 0 - Preto
+    {150, 0, 0},    // 1 - Marrom
+    {255, 0, 0},    // 2 - Vermelho
+    {255, 140, 0},  // 3 - Laranja
+    {255, 255, 0},  // 4 - Amarelo
+    {0, 255, 0},    // 5 - Verde
+    {0, 255, 255},  // 6 - Azul
+    {75, 0, 130},   // 7 - Violeta
+    {128, 128, 128},// 8 - Cinza
+    {255, 255, 255} // 9 - Branco
+};*/
+
+
 // Definição da intensidade dos leds
 uint32_t matrix_rgb(double b, double r, double g)
 {

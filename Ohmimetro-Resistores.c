@@ -19,6 +19,34 @@
  float ADC_VREF = 3.31;     // Tensão de referência do ADC
  int ADC_RESOLUTION = 4095; // Resolução do ADC (12 bits)
  
+// Mapeamento de cores
+const char *cores[] = {
+    "Preto",    // 0
+    "Marrom",   // 1
+    "Vermelho", // 2
+    "Laranja",  // 3
+    "Amarelo",  // 4
+    "Verde",    // 5
+    "Azul",     // 6
+    "Violeta",  // 7
+    "Cinza",    // 8
+    "Branco"    // 9
+};
+
+// Função para mapear o valor do ADC para a faixa de cor
+const char* mapear_cor_resistor(uint16_t valor_adc) {
+    // Mapeamento de valores de ADC para faixas de cor
+    if (valor_adc < 410) return cores[1];  // Marrom
+    if (valor_adc < 820) return cores[2];  // Vermelho
+    if (valor_adc < 1230) return cores[3]; // Laranja
+    if (valor_adc < 1640) return cores[4]; // Amarelo
+    if (valor_adc < 2050) return cores[5]; // Verde
+    if (valor_adc < 2460) return cores[6]; // Azul
+    if (valor_adc < 2870) return cores[7]; // Violeta
+    if (valor_adc < 3280) return cores[8]; // Cinza
+    return cores[9]; // Branco
+}
+
  // Trecho para modo BOOTSEL com botão B
  #include "pico/bootrom.h"
  #define botaoB 6
@@ -27,6 +55,29 @@
    reset_usb_boot(0, 0);
  }
  
+ const float tabela_E24[] = {
+    510, 560, 620, 680, 750, 820, 910,
+    1000, 1100, 1200, 1300, 1500, 1600, 1800, 2000, 2200,
+    2400, 2700, 3000, 3300, 3600, 3900, 4300, 4700, 5100,
+    5600, 6200, 6800, 7500, 8200, 9100,
+    10000, 11000, 12000, 13000, 15000, 16000, 18000, 20000,
+    22000, 24000, 27000, 30000, 33000, 36000, 39000, 43000,
+    47000, 51000, 56000, 62000, 68000, 75000, 82000, 91000, 100000
+  };
+
+  const int num_valores = sizeof(tabela_E24) / sizeof(tabela_E24[0]);
+
+  void determinar_faixas(float resistencia, int *digito1, int *digito2, int *multiplicador) {
+    int valor = (int)resistencia;
+    *multiplicador = 0;
+    while (valor >= 100) {
+        valor /= 10;
+        (*multiplicador)++;
+    }
+    *digito1 = valor / 10;
+    *digito2 = valor % 10;
+}
+
  int main()
  {
    // Para ser utilizado o modo BOOTSEL com botão B
@@ -59,6 +110,13 @@
    adc_init();
    adc_gpio_init(ADC_PIN); // GPIO 28 como entrada analógica
  
+   uint16_t valor_adc = adc_read(); // Lê o valor do ADC (0-4095)
+   const char *corR = mapear_cor_resistor(valor_adc);
+
+   const char *cor1 = " "; 
+   const char *cor2 = " "; 
+   const char *cor3 = " ";
+
    float tensao;
    char str_x[5]; // Buffer para armazenar a string
    char str_y[5]; // Buffer para armazenar a string
@@ -78,9 +136,25 @@
  
     // Fórmula simplificada: R_x = R_conhecido * ADC_encontrado /(ADC_RESOLUTION - adc_encontrado)
     R_x = (R_conhecido * media) / (ADC_RESOLUTION - media);
- 
-    sprintf(str_x, "%1.0f", media); // Converte o inteiro em string
-    sprintf(str_y, "%1.0f", R_x);   // Converte o float em string
+
+    int digito1, digito2, multiplicador;
+    determinar_faixas(R_x, &digito1, &digito2, &multiplicador);
+
+    // Agora fazer if-else para buscar cores
+    if (digito1 >= 0 && digito1 <= 9)
+        cor1 = cores[digito1];
+    else
+        cor1 = "Erro";
+
+    if (digito2 >= 0 && digito2 <= 9)
+        cor2 = cores[digito2];
+    else
+        cor2 = "Erro";
+
+    if (multiplicador >= 0 && multiplicador <= 9)
+        cor3 = cores[multiplicador];
+    else
+        cor3 = "Erro";
  
     // cor = !cor;
     // Atualiza o conteúdo do display com animações
@@ -92,6 +166,9 @@
     ssd1306_draw_string(&ssd, "1.", 8, 16);              // Numeros "1.", "2.", "3." alinhados
     ssd1306_draw_string(&ssd, "2.", 8, 24);
     ssd1306_draw_string(&ssd, "3.", 8, 32);
+    ssd1306_draw_string(&ssd, cor1, 8, 16);             // Exibe o nome da cor da faixa 1
+    ssd1306_draw_string(&ssd, cor2, 8, 24);              // Exibe o nome da cor da faixa 2
+    ssd1306_draw_string(&ssd, cor3, 8, 32);              // Exibe o nome da cor da faixa 3
     ssd1306_draw_string(&ssd, "ADC", 13, 45);            // Escreve "ADC" no lado esquerdo
     ssd1306_draw_string(&ssd, "Resisten.", 50, 45);      // Escreve "Resisten." no lado direito
     ssd1306_draw_string(&ssd, str_x, 8, 52);             // Mostra valor ADC
