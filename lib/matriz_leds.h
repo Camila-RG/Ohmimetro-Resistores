@@ -20,7 +20,5 @@ extern uint led_b;
 void imprimirbinario();
 uint32_t matrix_rgb(double b, double r, double g);
 void desenho_pio(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b);
-void desenho_pio2(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b);
-void desenho_pio3(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r, double g, double b);
 
 #endif // MATRIZ_LEDS_H

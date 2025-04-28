@@ -198,3 +198,25 @@ void ssd1306_draw_string(ssd1306_t *ssd, const char *str, uint8_t x, uint8_t y)
     }
   }
 }
+
+void desenhar_resistor(ssd1306_t *ssd, int x, int y, int altura) {
+  int meio = x + 5; // Posição central (x fixo)
+
+  // Linha de entrada (parte de cima)
+  ssd1306_line(ssd, meio, y, meio, y + 5, true);
+
+  // Parte zigue-zague vertical
+  int atual_y = y + 5;
+  int tamanho_zigue = 3;
+  for (int i = 0; i < altura / tamanho_zigue; i++) {
+      if (i % 2 == 0) {
+          ssd1306_line(ssd, meio, atual_y, meio - 4, atual_y + tamanho_zigue, true);
+      } else {
+          ssd1306_line(ssd, meio - 4, atual_y, meio, atual_y + tamanho_zigue, true);
+      }
+      atual_y += tamanho_zigue;
+  }
+
+  // Linha de saída (parte de baixo)
+  ssd1306_line(ssd, meio, atual_y, meio, atual_y + 5, true);
+}
