@@ -1,21 +1,12 @@
-/*
- * Por: Wilton Lacerda Silva
- *    Ohmímetro utilizando o ADC da BitDogLab
- *
- * 
- * Neste exemplo, utilizamos o ADC do RP2040 para medir a resistência de um resistor
- * desconhecido, utilizando um divisor de tensão com dois resistores.
- * O resistor conhecido é de 10k ohm e o desconhecido é o que queremos medir.
- *
- */
-
- #include <stdio.h>
+#include <stdio.h>
  #include <stdlib.h>
  #include "pico/stdlib.h"
  #include "hardware/adc.h"
  #include "hardware/i2c.h"
  #include "lib/ssd1306.h"
  #include "lib/font.h"
+
+ // Definição de variáveis globais
  #define I2C_PORT i2c1
  #define I2C_SDA 14
  #define I2C_SCL 15
@@ -92,20 +83,33 @@
      sprintf(str_y, "%1.0f", R_x);   // Converte o float em string
  
      // cor = !cor;
-     //  Atualiza o conteúdo do display com animações
-     ssd1306_fill(&ssd, !cor);                          // Limpa o display
-     ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);      // Desenha um retângulo
-     ssd1306_line(&ssd, 3, 25, 123, 25, cor);           // Desenha uma linha
-     ssd1306_line(&ssd, 3, 37, 123, 37, cor);           // Desenha uma linha
-     ssd1306_draw_string(&ssd, "CEPEDI   TIC37", 8, 6); // Desenha uma string
-     ssd1306_draw_string(&ssd, "EMBARCATECH", 20, 16);  // Desenha uma string
-     ssd1306_draw_string(&ssd, "  Ohmimetro", 10, 28);  // Desenha uma string
-     ssd1306_draw_string(&ssd, "ADC", 13, 41);          // Desenha uma string
-     ssd1306_draw_string(&ssd, "Resisten.", 50, 41);    // Desenha uma string
-     ssd1306_line(&ssd, 44, 37, 44, 60, cor);           // Desenha uma linha vertical
-     ssd1306_draw_string(&ssd, str_x, 8, 52);           // Desenha uma string
-     ssd1306_draw_string(&ssd, str_y, 59, 52);          // Desenha uma string
-     ssd1306_send_data(&ssd);                           // Atualiza o display
-     sleep_ms(700);
+    // Atualiza o conteúdo do display com animações
+    ssd1306_fill(&ssd, !cor);                          // Limpa o display
+    ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);       // Desenha um retângulo
+
+    // Título no topo
+    ssd1306_draw_string(&ssd, "Resist. Cores:", 10, 4);  // Desenha título
+
+    // Linhas de separação
+    ssd1306_line(&ssd, 3, 12, 123, 12, cor);             // Linha horizontal (mais próxima do título)
+    ssd1306_line(&ssd, 44, 37, 44, 60, cor);             // Linha vertical separando ADC e Resistência
+
+    // Numeros "1.", "2.", "3." alinhados
+    ssd1306_draw_string(&ssd, "1.", 8, 16);              // Subiu os números
+    ssd1306_draw_string(&ssd, "2.", 8, 24);
+    ssd1306_draw_string(&ssd, "3.", 8, 32);
+
+    // Títulos para medições
+    ssd1306_draw_string(&ssd, "ADC", 13, 45);            // Escreve "ADC" no lado esquerdo
+    ssd1306_draw_string(&ssd, "Resisten.", 50, 45);      // Escreve "Resisten." no lado direito
+
+    // Valores dinâmicos
+    ssd1306_draw_string(&ssd, str_x, 8, 52);             // Mostra valor ADC
+    ssd1306_draw_string(&ssd, str_y, 59, 52);            // Mostra valor Resistência
+
+    ssd1306_send_data(&ssd);                             // Atualiza o display
+    sleep_ms(700);
+
+     
    }
  }
