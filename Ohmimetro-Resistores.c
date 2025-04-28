@@ -76,37 +76,26 @@
      }
      float media = soma / 500.0f;
  
-       // Fórmula simplificada: R_x = R_conhecido * ADC_encontrado /(ADC_RESOLUTION - adc_encontrado)
-       R_x = (R_conhecido * media) / (ADC_RESOLUTION - media);
+    // Fórmula simplificada: R_x = R_conhecido * ADC_encontrado /(ADC_RESOLUTION - adc_encontrado)
+    R_x = (R_conhecido * media) / (ADC_RESOLUTION - media);
  
-     sprintf(str_x, "%1.0f", media); // Converte o inteiro em string
-     sprintf(str_y, "%1.0f", R_x);   // Converte o float em string
+    sprintf(str_x, "%1.0f", media); // Converte o inteiro em string
+    sprintf(str_y, "%1.0f", R_x);   // Converte o float em string
  
-     // cor = !cor;
+    // cor = !cor;
     // Atualiza o conteúdo do display com animações
     ssd1306_fill(&ssd, !cor);                          // Limpa o display
     ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);       // Desenha um retângulo
-
-    // Título no topo
     ssd1306_draw_string(&ssd, "Resist. Cores:", 10, 4);  // Desenha título
-
-    // Linhas de separação
-    ssd1306_line(&ssd, 3, 12, 123, 12, cor);             // Linha horizontal (mais próxima do título)
+    ssd1306_line(&ssd, 3, 12, 123, 12, cor);             // Linha horizontal
     ssd1306_line(&ssd, 44, 37, 44, 60, cor);             // Linha vertical separando ADC e Resistência
-
-    // Numeros "1.", "2.", "3." alinhados
-    ssd1306_draw_string(&ssd, "1.", 8, 16);              // Subiu os números
+    ssd1306_draw_string(&ssd, "1.", 8, 16);              // Numeros "1.", "2.", "3." alinhados
     ssd1306_draw_string(&ssd, "2.", 8, 24);
     ssd1306_draw_string(&ssd, "3.", 8, 32);
-
-    // Títulos para medições
     ssd1306_draw_string(&ssd, "ADC", 13, 45);            // Escreve "ADC" no lado esquerdo
     ssd1306_draw_string(&ssd, "Resisten.", 50, 45);      // Escreve "Resisten." no lado direito
-
-    // Valores dinâmicos
     ssd1306_draw_string(&ssd, str_x, 8, 52);             // Mostra valor ADC
     ssd1306_draw_string(&ssd, str_y, 59, 52);            // Mostra valor Resistência
-
     ssd1306_send_data(&ssd);                             // Atualiza o display
     sleep_ms(700);
 
