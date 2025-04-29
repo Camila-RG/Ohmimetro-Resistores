@@ -7,14 +7,6 @@
 #include "hardware/adc.h"
 #include "matriz_leds.h"
 
-// Arquivo .pio para controle da matriz
-
-extern PIO pio;
-
-// Pino que realizará a comunicação do microcontrolador com a matriz
-// Como o pino do simulador eh diferente do pino da placa (7), deve-se alterar  
-#define OUT_PIN 27
-
 // Gera o binário que controla a cor de cada célula do LED
 //rotina para definição da intensidade de cores do led
 uint32_t gerar_binario_cor(double red, double green, double blue)

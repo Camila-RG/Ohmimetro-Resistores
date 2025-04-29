@@ -6,6 +6,7 @@
 #include "lib/ssd1306.h"
 #include "lib/font.h"
 #include "lib/matriz_leds.h"
+#include "ws2812.pio.h"
 
 // Definições globais
 #define I2C_PORT i2c1
@@ -66,6 +67,10 @@ int main() {
     gpio_set_irq_enabled_with_callback(botaoB, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     // Aqui termina o trecho para modo BOOTSEL com botão B
 
+    PIO pio = pio0;
+
+    // Configurando a maquina de estado 
+    uint sm = configurar_matriz(pio, OUT_PIN);
 
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);

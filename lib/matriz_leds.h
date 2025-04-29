@@ -4,7 +4,9 @@
 #include "pio_matrix.pio.h"
 
 #define WS2812_PIN 7
+#define OUT_PIN 27
 
+extern PIO pio;
 extern uint sm;
 extern uint led_r;
 extern uint led_g;
