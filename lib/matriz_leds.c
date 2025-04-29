@@ -37,32 +37,30 @@ uint configurar_matriz(PIO pio, uint8_t pin){
 
     return sm;
 }
-
-void imprimir_desenho(Matriz_leds_config configuracao, PIO pio, uint sm){
-    for (int contadorLinha = 4; contadorLinha >= 0; contadorLinha--){
-        if(contadorLinha % 2){
-            for (int contadorColuna = 0; contadorColuna < 5; contadorColuna ++){
+void imprimir_desenho(Matriz_leds_config configuracao, PIO pio, uint sm) {
+    for (int contadorLinha = 4; contadorLinha >= 0; contadorLinha--) {
+        if(contadorLinha % 2) {
+            for (int contadorColuna = 0; contadorColuna < 5; contadorColuna++) {
                 uint32_t valor_cor_binario = gerar_binario_cor(
                     configuracao[contadorLinha][contadorColuna].red,
                     configuracao[contadorLinha][contadorColuna].green,
                     configuracao[contadorLinha][contadorColuna].blue
                 );
-
                 pio_sm_put_blocking(pio, sm, valor_cor_binario);
             }
-        }else{
-            for (int contadorColuna = 4; contadorColuna >= 0; contadorColuna --){
+        } else {
+            for (int contadorColuna = 4; contadorColuna >= 0; contadorColuna--) {
                 uint32_t valor_cor_binario = gerar_binario_cor(
                     configuracao[contadorLinha][contadorColuna].red,
                     configuracao[contadorLinha][contadorColuna].green,
                     configuracao[contadorLinha][contadorColuna].blue
                 );
-
                 pio_sm_put_blocking(pio, sm, valor_cor_binario);
             }
         }
     }
 }
+
 
 RGB_cod obter_cor_por_parametro_RGB(int red, int green, int blue){
     RGB_cod cor_customizada = {red/255.0,green/255.0,blue/255.0};
@@ -70,7 +68,7 @@ RGB_cod obter_cor_por_parametro_RGB(int red, int green, int blue){
     return cor_customizada;
 }
 
-void hex_to_rgb(uint32_t hex_animation[][25], rgb_led rgb_data[][25], uint8_t frames) {
+void hex_to_rgb(uint32_t hex_animation[][25],led rgb_data[][25], uint8_t frames) {
     for(int frame = 0; frame < frames; frame++) {
         for (int j = 0; j < 25; j++) {
             rgb_data[frame][j].r = (hex_animation[frame][j] >> 24) & 0xFF;
@@ -80,7 +78,7 @@ void hex_to_rgb(uint32_t hex_animation[][25], rgb_led rgb_data[][25], uint8_t fr
     }   
 }
 
-void ajustar_brilho(rgb_led matriz[][25], float brightness, uint8_t frames) {
+void ajustar_brilho(led matriz[][25], float brightness, uint8_t frames) {
     for (int i = 0; i < frames; i++) {
         for (int j = 0; j < 5 * 5; j++) {
             matriz[i][j].r = (int)(matriz[i][j].r * brightness);
@@ -90,7 +88,7 @@ void ajustar_brilho(rgb_led matriz[][25], float brightness, uint8_t frames) {
     }
 }
 
-void converter_RGB_para_matriz_leds(rgb_led matriz[5][5], Matriz_leds_config matriz_leds) {
+void converter_RGB_para_matriz_leds(led matriz[5][5], Matriz_leds_config matriz_leds) {
     for (int linha = 0; linha < 5; linha++) {
         for (int coluna = 0; coluna < 5; coluna++) {
             matriz_leds[linha][coluna].red = matriz[linha][coluna].r / 255.0;
@@ -100,9 +98,9 @@ void converter_RGB_para_matriz_leds(rgb_led matriz[5][5], Matriz_leds_config mat
     }
 }
 
-void enviar_animacao(rgb_led matriz[][25], PIO pio, uint sm, uint8_t frames) {
+void enviar_animacao(led matriz[][25], PIO pio, uint sm, uint8_t frames) {
     Matriz_leds_config matriz_leds;
-    rgb_led raw_matrix[5][5];
+    led raw_matrix[5][5];
 
     for(uint8_t frame = 0; frame < frames; frame++){
         for(uint8_t i = 0; i < 25; i++){

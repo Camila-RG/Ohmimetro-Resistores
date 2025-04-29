@@ -4,7 +4,6 @@
 #include "pio_matrix.pio.h"
 
 #define WS2812_PIN 7
-#define OUT_PIN 27
 
 extern PIO pio;
 extern uint sm;
@@ -23,7 +22,7 @@ typedef struct {
     int r;
     int g;
     int b;
-} rgb_led;
+} led;
 
 typedef Led_config RGB_cod;
 
@@ -38,13 +37,13 @@ void imprimir_desenho(Matriz_leds_config configuracao, PIO pio, uint sm);
 
 RGB_cod obter_cor_por_parametro_RGB(int red, int green, int blue);
 
-void hex_to_rgb(uint32_t hex_animation[][25], rgb_led rgb_data[][25], uint8_t frames);
+void hex_to_rgb(uint32_t hex_animation[][25], led data[][25], uint8_t frames);
 
-void ajustar_brilho(rgb_led matriz[][25], float brightness, uint8_t FRAME_COUNT);
+void ajustar_brilho(led matriz[][25], float brightness, uint8_t FRAME_COUNT);
 
-void converter_RGB_para_matriz_leds(rgb_led matriz[5][5], Matriz_leds_config matriz_leds);
+void converter_para_RGB_matriz_leds(led matriz[5][5], Matriz_leds_config matriz_leds);
 
-void enviar_animacao(rgb_led matriz[][25], PIO pio, uint sm, uint8_t FRAME_COUNT);
+void enviar_animacao(led matriz[][25], PIO pio, uint sm, uint8_t FRAME_COUNT);
 
 void limpar_matriz(PIO pio, uint sm);
 

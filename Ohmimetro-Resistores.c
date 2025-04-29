@@ -7,8 +7,10 @@
 #include "lib/font.h"
 #include "lib/matriz_leds.h"
 #include "ws2812.pio.h"
+#include "pico/bootrom.h"
 
 // Definições globais
+#define botaoB 6
 #define I2C_PORT i2c1
 #define I2C_SDA 14
 #define I2C_SCL 15
@@ -19,14 +21,89 @@
 int R_conhecido = 10000;
 float ADC_VREF = 3.31;
 int ADC_RESOLUTION = 4095;
-float R_x = 0.0;           // Resistor desconhecido
+float R_x = 0.0;
 
+typedef struct {
+    float red;
+    float green;
+    float blue;
+} Cor;
+
+Cor tabela_cores[10] = {
+    {0.0f, 0.0f, 0.0f},  // Preto
+    {0.3f, 0.2f, 0.0f},  // Marrom
+    {1.0f, 0.0f, 0.0f},  // Vermelho
+    {1.0f, 0.5f, 0.0f},  // Laranja
+    {1.0f, 1.0f, 0.0f},  // Amarelo
+    {0.0f, 1.0f, 0.0f},  // Verde
+    {0.0f, 0.0f, 1.0f},  // Azul
+    {0.5f, 0.0f, 1.0f},  // Violeta
+    {0.5f, 0.5f, 0.5f},  // Cinza
+    {1.0f, 1.0f, 1.0f}   // Branco
+};
 
 // Cores
 const char *cores[] = {
     "Preto", "Marrom", "Vermelho", "Laranja", "Amarelo",
     "Verde", "Azul", "Violeta", "Cinza", "Branco"
 };
+
+// Função para obter as cores dos resistores com base nos valores de digito1, digito2 e multiplicador
+void obter_cores_resistor(int digito1, int digito2, int multiplicador, Cor *cor1, Cor *cor2, Cor *cor3) {
+    // Mapeando os valores dos dígitos para as cores
+    if (digito1 >= 0 && digito1 < 10)
+        *cor1 = tabela_cores[digito1];  // Cor do primeiro dígito
+    else
+        *cor1 = (Cor){0.0f, 0.0f, 0.0f};  // Caso de erro, cor preta
+
+    if (digito2 >= 0 && digito2 < 10)
+        *cor2 = tabela_cores[digito2];  // Cor do segundo dígito
+    else
+        *cor2 = (Cor){0.0f, 0.0f, 0.0f};  // Caso de erro, cor preta
+
+    if (multiplicador >= 0 && multiplicador < 10)
+        *cor3 = tabela_cores[multiplicador];  // Cor do multiplicador
+    else
+        *cor3 = (Cor){0.0f, 0.0f, 0.0f};  // Caso de erro, cor preta
+}
+
+void exibir_resistor(uint32_t index, int digito1, int digito2, int multiplicador, PIO pio, uint sm) {
+    // Obter as cores associadas aos valores dos dígitos
+    Cor cor1, cor2, cor3;
+    obter_cores_resistor(digito1, digito2, multiplicador, &cor1, &cor2, &cor3);
+
+    // Definir as cores para as 3 fileiras na matriz (vamos acender as 3 primeiras fileiras)
+    Matriz_leds_config matriz_leds = {
+        {   // Primeira fileira com cor1
+            {cor1.red, cor1.green, cor1.blue}, {cor1.red, cor1.green, cor1.blue}, {cor1.red, cor1.green, cor1.blue}, 
+            {cor1.red, cor1.green, cor1.blue}, {cor1.red, cor1.green, cor1.blue}
+        },
+        {   // Segunda fileira com cor2
+            {cor2.red, cor2.green, cor2.blue}, {cor2.red, cor2.green, cor2.blue}, {cor2.red, cor2.green, cor2.blue}, 
+            {cor2.red, cor2.green, cor2.blue}, {cor2.red, cor2.green, cor2.blue}
+        },
+        {   // Terceira fileira com cor3
+            {cor3.red, cor3.green, cor3.blue}, {cor3.red, cor3.green, cor3.blue}, {cor3.red, cor3.green, cor3.blue}, 
+            {cor3.red, cor3.green, cor3.blue}, {cor3.red, cor3.green, cor3.blue}
+        },
+        {   // Quarta fileira apagada (preta)
+            {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 
+            {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}
+        },
+        {   // Quinta fileira apagada (preta)
+            {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 
+            {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}
+        }
+    };
+
+    // Enviar para a matriz de LEDs
+    imprimir_desenho(matriz_leds, pio, sm);  // A função já vai imprimir a matriz de LEDs com as cores
+}
+
+void gpio_irq_handler(uint gpio, uint32_t events)
+{
+  reset_usb_boot(0, 0);
+}
 
 // Determinar faixas
 void determinar_faixas(float resistencia, int *digito1, int *digito2, int *multiplicador) {
@@ -46,14 +123,6 @@ void determinar_faixas(float resistencia, int *digito1, int *digito2, int *multi
     *digito2 = temp % 10;
 }
 
-#include "pico/bootrom.h"
-#define botaoB 6
-void gpio_irq_handler(uint gpio, uint32_t events)
-{
-  reset_usb_boot(0, 0);
-}
-
-
 int main() {
     // Inicialização
     gpio_init(Botao_A);
@@ -70,7 +139,7 @@ int main() {
     PIO pio = pio0;
 
     // Configurando a maquina de estado 
-    uint sm = configurar_matriz(pio, OUT_PIN);
+    uint sm = configurar_matriz(pio, WS2812_PIN);
 
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
@@ -129,6 +198,12 @@ int main() {
         else
             cor3 = "Erro";
 
+        // Função para configurar a exibição das cores no display e na matriz de LEDs
+        void atualizar_display_matriz(ssd1306_t *ssd, PIO pio, uint sm, int digito1, int digito2, int multiplicador);
+        const char *cor1 = cores[digito1];
+        const char *cor2 = cores[digito2];
+        const char *cor3 = cores[multiplicador];
+
         // Atualiza o display
         ssd1306_fill(&ssd, !cor);
         ssd1306_rect(&ssd, 3, 3, 122, 60, cor, !cor);
@@ -146,6 +221,8 @@ int main() {
         ssd1306_draw_string(&ssd, str_x, 8, 52);
         ssd1306_draw_string(&ssd, str_y, 59, 52);
         ssd1306_send_data(&ssd);
+
+        exibir_resistor(0, digito1, digito2, multiplicador, pio, sm);
 
         sleep_ms(700);
     }
