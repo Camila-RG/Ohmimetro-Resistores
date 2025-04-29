@@ -16,6 +16,9 @@ add_executable(${PROJECT_NAME}
         lib/matriz_leds.c
         )
 
+pico_generate_pio_header(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+pico_generate_pio_header(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/lib/pio_matrix.pio)        
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE 
         PICO_PRINTF_SUPPORT_FLOAT=1 
         PICO_STDIO_ENABLE_PRINTF=1

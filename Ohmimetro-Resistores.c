@@ -18,6 +18,8 @@
 int R_conhecido = 10000;
 float ADC_VREF = 3.31;
 int ADC_RESOLUTION = 4095;
+float R_x = 0.0;           // Resistor desconhecido
+
 
 // Cores
 const char *cores[] = {
@@ -27,21 +29,43 @@ const char *cores[] = {
 
 // Determinar faixas
 void determinar_faixas(float resistencia, int *digito1, int *digito2, int *multiplicador) {
-    int valor = (int)resistencia;
+    int temp = resistencia;
     *multiplicador = 0;
-    while (valor >= 100) {
-        valor /= 10;
+
+    while (temp >= 100) {
+        temp /= 10;
         (*multiplicador)++;
     }
-    *digito1 = valor / 10;
-    *digito2 = valor % 10;
+    if (temp < 10) { // Ajuste para valores tipo 4.7k -> 47
+        resistencia *= 10;
+        temp = resistencia;
+        *multiplicador -= 1;
+    }
+    *digito1 = temp / 10;
+    *digito2 = temp % 10;
 }
+
+#include "pico/bootrom.h"
+#define botaoB 6
+void gpio_irq_handler(uint gpio, uint32_t events)
+{
+  reset_usb_boot(0, 0);
+}
+
 
 int main() {
     // Inicialização
     gpio_init(Botao_A);
     gpio_set_dir(Botao_A, GPIO_IN);
     gpio_pull_up(Botao_A);
+    
+    // Para ser utilizado o modo BOOTSEL com botão B
+    gpio_init(botaoB);
+    gpio_set_dir(botaoB, GPIO_IN);
+    gpio_pull_up(botaoB);
+    gpio_set_irq_enabled_with_callback(botaoB, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
+    // Aqui termina o trecho para modo BOOTSEL com botão B
+
 
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
@@ -75,7 +99,8 @@ int main() {
         }
         float media = soma / 500.0f;
 
-        float R_x = (R_conhecido * media) / (ADC_RESOLUTION - media);
+        // Fórmula simplificada: R_x = R_conhecido * ADC_encontrado /(ADC_RESOLUTION - adc_encontrado)
+        R_x = (R_conhecido * media) / (ADC_RESOLUTION - media);
 
         // Atualiza str_x e str_y
         snprintf(str_x, sizeof(str_x), "%d", (int)media);
